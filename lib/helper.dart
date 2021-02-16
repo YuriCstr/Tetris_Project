@@ -37,3 +37,23 @@ Widget getTetrisPoint(Color color) {
     decoration: BoxDecoration(color: color, shape: BoxShape.rectangle),
   );
 }
+
+Widget getGameOverText(int score) {
+  return Center(
+    child: Text(
+      "Tu perdeu seu merda\nScore Final: $score",
+      style: TextStyle(
+        fontSize: 35,
+        fontWeight: FontWeight.bold,
+        color: Colors.blue,
+        shadows: [
+          Shadow(
+            color: Colors.black,
+            blurRadius: 3,
+            offset: Offset(2, 2),
+          )
+        ],
+      ),
+    ),
+  );
+}

@@ -1,10 +1,11 @@
+import 'package:Tetris_Project/userInput.dart';
 import 'package:flutter/material.dart';
 import 'actionButtons.dart';
-import 'main.dart';
 import 'helper.dart';
 import 'dart:async';
 import 'blocks/block.dart';
 import 'blocks/alivePoint.dart';
+import 'scoreDisplay.dart';
 
 enum LastButtonPressed { LEFT, RIGHT, ROTATE_LEFT, ROTATE_RIGHT, NONE }
 enum MoveDir { LEFT, RIGHT, DOWN }
@@ -29,6 +30,7 @@ class _Game extends State<Game> {
   LastButtonPressed performAction = LastButtonPressed.NONE;
   Block currentBlock;
   List<AlivePoint> alivePoints = List<AlivePoint>();
+  int score = 0;
 
   @override
   void initState() {
@@ -39,7 +41,6 @@ class _Game extends State<Game> {
   void onActionButtonPressed(LastButtonPressed newAction) {
     setState(() {
       performAction = newAction;
-      print("Changing state: " + performAction.toString());
     });
   }
 
@@ -106,6 +107,8 @@ class _Game extends State<Game> {
           point.y += 1;
         }
       });
+
+      score += 25;
     });
   }
 
@@ -123,17 +126,22 @@ class _Game extends State<Game> {
     }
   }
 
+  bool playerLost() {
+    bool retVal = false;
+    alivePoints.forEach((point) {
+      if (point.y <= 0) {
+        retVal = true;
+      }
+    });
+
+    return retVal;
+  }
+
   void onTimeTick(Timer time) {
-    if (currentBlock == null) return;
-
+    if (currentBlock == null || playerLost()) return;
     removeFullRows();
-
-    //check if tile is already at the bottom
     if (currentBlock.isAtBottom() || isAboweOldBlock()) {
-      //save the block
       saveOldBlock();
-
-      //spawn new block
       setState(() {
         currentBlock = getRandomBlock();
       });
@@ -186,32 +194,16 @@ class _Game extends State<Game> {
             decoration: BoxDecoration(
               border: Border.all(color: Colors.black),
             ),
-            child: drawTetrisBlocks(),
+            child: (playerLost() == false)
+                ? drawTetrisBlocks()
+                : getGameOverText(score),
           ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            ActionButton(
-              onActionButtonPressed,
-              Icon(Icons.arrow_left),
-              LastButtonPressed.LEFT,
-            ),
-            ActionButton(
-              onActionButtonPressed,
-              Icon(Icons.arrow_right),
-              LastButtonPressed.RIGHT,
-            ),
-            ActionButton(
-              onActionButtonPressed,
-              Icon(Icons.rotate_left),
-              LastButtonPressed.ROTATE_LEFT,
-            ),
-            ActionButton(
-              onActionButtonPressed,
-              Icon(Icons.rotate_right),
-              LastButtonPressed.ROTATE_RIGHT,
-            ),
+            ScoreDisplay(score),
+            UserInput(onActionButtonPressed),
           ],
         )
       ],
